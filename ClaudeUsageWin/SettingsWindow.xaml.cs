@@ -25,9 +25,14 @@ public partial class SettingsWindow : Window
         _incomingConfig = config;
         ResultConfig    = config;
 
-        // Restore window size (clamped to max defaults)
-        Width  = Math.Clamp(config.SettingsWidth,  MinWidth,  MaxWidth);
-        Height = Math.Clamp(config.SettingsHeight, MinHeight, MaxHeight);
+        // Apply UI scale first (LayoutTransform on inner grid)
+        var scale = Math.Clamp(config.SettingsScale, 0.75, 1.50);
+        SettingsScaleTransform.ScaleX = scale;
+        SettingsScaleTransform.ScaleY = scale;
+
+        // Restore window size (clamped to a generous range)
+        Width  = Math.Clamp(config.SettingsWidth,  MinWidth,  800);
+        Height = Math.Clamp(config.SettingsHeight, MinHeight, 900);
 
         // ── Auth ──────────────────────────────────────────────────
         bool isManual = !string.IsNullOrWhiteSpace(config.SessionKey);
@@ -43,6 +48,8 @@ public partial class SettingsWindow : Window
         // ── Appearance ────────────────────────────────────────────
         OpacitySlider.Value          = config.OpacityPct;
         OpacityValueText.Text        = $"{config.OpacityPct}%";
+        ScaleSlider.Value            = Math.Round(scale * 100.0 / 5.0) * 5.0; // snap to nearest 5
+        ScaleValueText.Text          = $"{(int)ScaleSlider.Value}%";
         AlwaysOnTopCheck.IsChecked   = config.AlwaysOnTop;
         IconStyleCombo.SelectedIndex = Math.Max(0, Array.IndexOf(IconStyles, config.IconStyle));
 
@@ -165,6 +172,22 @@ public partial class SettingsWindow : Window
             OpacityValueText.Text = $"{(int)OpacitySlider.Value}%";
     }
 
+    // ── UI Scale slider ───────────────────────────────────────────
+
+    private void ScaleSlider_ValueChanged(object sender,
+        System.Windows.RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (ScaleValueText is null || SettingsScaleTransform is null) return;
+        var pct   = (int)ScaleSlider.Value;
+        var scale = pct / 100.0;
+        ScaleValueText.Text           = $"{pct}%";
+        SettingsScaleTransform.ScaleX = scale;
+        SettingsScaleTransform.ScaleY = scale;
+        // Resize window proportionally to base size (460×560)
+        Width  = Math.Clamp(460 * scale, MinWidth,  800);
+        Height = Math.Clamp(560 * scale, MinHeight, 900);
+    }
+
     // ── Auto-detect Org ID ────────────────────────────────────────────
 
     private async void DetectBtn_Click(object sender, RoutedEventArgs e)
@@ -247,9 +270,10 @@ public partial class SettingsWindow : Window
             ShowRemaining       = _incomingConfig.ShowRemaining,
             SubscriptionType    = _incomingConfig.SubscriptionType,
             StatuslineInstalled = _incomingConfig.StatuslineInstalled,
-            // Remember settings window dimensions
-            SettingsWidth  = (int)Math.Clamp(ActualWidth,  MinWidth,  MaxWidth),
-            SettingsHeight = (int)Math.Clamp(ActualHeight, MinHeight, MaxHeight),
+            // Remember settings window dimensions and scale
+            SettingsWidth  = (int)Math.Clamp(ActualWidth,  MinWidth,  800),
+            SettingsHeight = (int)Math.Clamp(ActualHeight, MinHeight, 900),
+            SettingsScale  = ScaleSlider.Value / 100.0,
             PopupWidth     = _incomingConfig.PopupWidth,
         };
 

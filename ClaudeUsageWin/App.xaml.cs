@@ -327,7 +327,16 @@ public partial class App : WpfApp
 
                 // ── 2. Try API ────────────────────────────────────
                 Models.UsageData? data = null;
-                if (client is not null)
+
+                // OAuth path: use api.anthropic.com directly — no Cloudflare, no org ID
+                if (client is not null && creds is not null)
+                {
+                    Logger.Log("RefreshData: trying OAuth direct endpoint (api.anthropic.com)");
+                    data = await client.GetOAuthUsageAsync(creds.SubscriptionType);
+                }
+
+                // Session key path: use claude.ai with org ID
+                if (data is null && client is not null && creds is null)
                 {
                     var orgId = _config.OrgId;
                     if (string.IsNullOrEmpty(orgId))
@@ -341,9 +350,16 @@ public partial class App : WpfApp
                             Logger.Log($"RefreshData: OrgId detected: {orgId}");
                         }
                     }
-
                     if (orgId is not null)
                         data = await client.GetUsageAsync(orgId);
+                }
+
+                // Overlay today's local stats (messages + tokens) on API data
+                if (data is not null)
+                {
+                    var local = LocalStatsReader.TryRead();
+                    if (local is not null)
+                        data = data with { TodayMessages = local.TodayMessages, TodayTokens = local.TodayTokens };
                 }
 
                 // ── 3a. API success ───────────────────────────────
@@ -422,7 +438,7 @@ public partial class App : WpfApp
     {
         IsSettingsOpen = true;
         var dlg = new SettingsWindow(_config);
-        dlg.Owner = _popup;
+        // No Owner — avoids modal focus-trap sound when clicking the main window
         if (dlg.ShowDialog() == true)
         {
             bool credChanged = dlg.ResultConfig.SessionKey != _config.SessionKey;

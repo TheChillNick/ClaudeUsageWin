@@ -32,9 +32,10 @@ public record AppConfig
     public bool StatuslineInstalled { get; init; } = false;
 
     // Window sizes (remembered across sessions)
-    public int PopupWidth      { get; init; } = 340;
-    public int SettingsWidth   { get; init; } = 540;
-    public int SettingsHeight  { get; init; } = 640;
+    public int    PopupWidth      { get; init; } = 340;
+    public int    SettingsWidth   { get; init; } = 460;
+    public int    SettingsHeight  { get; init; } = 560;
+    public double SettingsScale   { get; init; } = 1.0;
 }
 
 public static class ConfigService
