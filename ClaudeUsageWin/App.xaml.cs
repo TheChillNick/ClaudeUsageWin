@@ -103,11 +103,24 @@ public partial class App : WpfApp
             var localStats = LocalStatsReader.TryRead();
             if (localStats is null)
             {
-                Logger.Log("Startup: no credentials and no local stats, opening settings");
-                ShowSettings();
-                return;
+                // First run — show wizard instead of raw settings
+                var wizard = new SetupWizardWindow();
+                if (wizard.ShowDialog() != true)
+                {
+                    Shutdown();
+                    return;
+                }
+                if (!string.IsNullOrWhiteSpace(wizard.ResultSessionKey))
+                {
+                    _config = _config with { SessionKey = wizard.ResultSessionKey };
+                    ConfigService.Save(_config);
+                }
+                // After wizard, continue to normal startup
             }
-            Logger.Log("Startup: no credentials — will use local stats only");
+            else
+            {
+                Logger.Log("Startup: no credentials — will use local stats only");
+            }
         }
 
         Logger.Log($"Startup: hasSessionKey={!string.IsNullOrWhiteSpace(_config.SessionKey)}, " +
