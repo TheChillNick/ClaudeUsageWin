@@ -1,222 +1,191 @@
+<div align="center">
+
 # Claude Usage Win
 
-**Track your Claude AI usage limits from the Windows system tray.**
+**Real-time Claude AI usage monitoring from your Windows system tray.**
 
-A Windows port inspired by [Claude Usage Tracker](https://github.com/hamed-elfayome/Claude-Usage-Tracker) for macOS. Monitor your Claude Pro/Team 5-hour window and weekly usage at a glance, directly from your system tray.
+[![Windows 11](https://img.shields.io/badge/Windows-11-0078D4?logo=windows11&logoColor=white)](https://www.microsoft.com/windows)
+[![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com)
+[![Version](https://img.shields.io/github/v/release/stepantech/ClaudeUsageWin?color=orange&label=version)](https://github.com/stepantech/ClaudeUsageWin/releases)
+[![License](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
 
-![Windows 11](https://img.shields.io/badge/Windows-11-blue) ![.NET 8](https://img.shields.io/badge/.NET-8.0-purple) ![Version](https://img.shields.io/badge/version-1.1.0-orange) ![License](https://img.shields.io/badge/license-MIT-green)
+*A Windows port of [Claude Usage Tracker](https://github.com/hamed-elfayome/Claude-Usage-Tracker) — inspired by the macOS original, built for the Windows desktop.*
+
+</div>
+
+---
+
+## Why This Exists
+
+Claude Pro and Team subscriptions have a 5-hour rolling usage window. There's no built-in indicator anywhere, so you never know how close you are to the limit until you hit it mid-conversation. Claude Usage Win puts that number in your system tray — always visible, always up to date, zero maintenance.
 
 ---
 
 ## Features
 
 ### Usage Tracking
-- **Real-time usage tracking** — 5-hour window and weekly usage displayed in a dark-themed popup
-- **Color-coded progress bars** — green → yellow → red as usage climbs
-- **Remaining vs used toggle** — switch between "% used" and "% remaining" display
-- **Sparkline chart** — recent usage history plotted in the popup
-- **Contextual Insights panel** — click 💡 to see usage rate/hr, estimated time to limit, and session peak
+| Feature | Description |
+|---------|-------------|
+| **Real-time monitoring** | 5-hour window and weekly usage, auto-refreshed every 30s–5min |
+| **Color-coded progress bars** | Green → yellow → red as you approach your limit |
+| **Remaining / Used toggle** | Switch between "% used" and "% remaining" with one click |
+| **Sparkline chart** | Mini history graph shows your usage trend at a glance |
+| **Contextual Insights panel** | Click 💡 to see usage rate/hr, estimated time to limit, and session peak |
+| **Today's stats** | Message count and token count for the current day |
 
 ### Authentication
-- **Auto-authentication** — reads Claude Code credentials (`~/.claude/.credentials.json`) with zero configuration
-- **Manual session key fallback** — paste your `sessionKey` cookie if Claude Code is not installed
-- **Multi-profile support** — manage multiple Claude accounts in Settings → Profiles; switch without restarting
-- **First-run Setup Wizard** — friendly 3-step onboarding for new users
+| Feature | Description |
+|---------|-------------|
+| **Zero-config OAuth** | Reads Claude Code credentials (`~/.claude/.credentials.json`) automatically — no setup needed if you use Claude Code |
+| **Manual session key** | Paste your `sessionKey` cookie if Claude Code isn't installed |
+| **Auto token refresh** | OAuth tokens are refreshed automatically before expiry |
+| **Multi-profile support** | Manage multiple Claude accounts (personal + work); switch without restarting |
+| **First-run Setup Wizard** | Friendly 3-step onboarding guides new users through account connection |
 
 ### Notifications
-- **Threshold notifications** — configurable alerts at 75%, 90%, and 95% usage (5-hour and weekly, independently)
-- **Network awareness** — gracefully handles offline/online transitions; shows last known data
+| Feature | Description |
+|---------|-------------|
+| **Threshold alerts** | Windows notifications at configurable thresholds (default: 75%, 90%, 95%) |
+| **Independent toggles** | Enable/disable notifications for the 5-hour and weekly windows separately |
+| **Network resilience** | Shows last-known data when offline; auto-refreshes when reconnected |
 
-### Appearance & Behavior
-- **Multiple tray icon styles** — Percentage, Bar, or Dot
-- **Opacity control** — adjustable popup transparency (20–100%)
-- **Usage window scale** — resize the popup content independently of the window chrome
-- **Always on top** — pin the popup above all other windows
-- **Pin button** — keep the popup open without it auto-closing
-- **Launch at Windows startup** — optional auto-start via the Windows registry
-
-### Window Management
-- **Position memory** — both the usage popup and Settings window remember their last position and size
-- **Non-modal Settings** — Settings and the usage popup are independent; interact with both simultaneously
-- **Snap restore** — drag the Settings title bar from a maximized state to restore it to a floating window
-- **Resize grip** — drag the corner of the popup to resize it
+### Appearance & Window Management
+| Feature | Description |
+|---------|-------------|
+| **3 tray icon styles** | Percentage number, filled bar, or colored dot |
+| **Opacity control** | Adjustable popup transparency (20–100%) |
+| **Usage window scale** | Resize popup content independently of window chrome (75%–150%) |
+| **Always on top** | Pin above all windows, or let it sit behind your work |
+| **Pin button** | Keep the popup open while you work without it auto-closing |
+| **Position memory** | Both popup and Settings window remember their last position and size |
+| **Non-modal Settings** | Interact with the popup and Settings window simultaneously |
+| **Snap restore** | Drag a maximized Settings window to restore it to floating mode |
+| **Launch at startup** | Optional auto-start via Windows registry |
 
 ### Developer Tools
-- **Copy Log to Clipboard** — tray → Developer → Copy Log to Clipboard
-- **Open Log File** — opens `%AppData%\ClaudeUsageWin\logs\debug.log` in your text editor
-- **Export Log…** — save the log file anywhere via a save dialog
-- **Live log watcher** — `scripts/dev-log.ps1` (see [Development](#development))
+| Feature | Description |
+|---------|-------------|
+| **Copy Log to Clipboard** | Tray → Developer → Copy Log |
+| **Open Log File** | Opens `%AppData%\ClaudeUsageWin\logs\debug.log` in your default text editor |
+| **Export Log** | Save-dialog to export the log anywhere on disk |
+| **Live log watcher** | `scripts/dev-log.ps1` — color-coded, live-tailing PowerShell log viewer |
 
 ---
 
 ## Installation
 
-### Option A: Download the executable (recommended)
+### Option A — Download the executable *(recommended)*
 
-1. Go to the [Releases](../../releases) page.
-2. Download `ClaudeUsage.exe`.
-3. Run it — no dependencies or installation required.
+1. Go to the **[Releases](../../releases)** page
+2. Download `ClaudeUsage.exe` from the latest release
+3. Run it — no installation, no dependencies, no admin rights required
 
-### Option B: Build from source
+The app stores its config in `%AppData%\ClaudeUsageWin\config.json` and logs to `%AppData%\ClaudeUsageWin\logs\debug.log`.
 
-Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+### Option B — Build from source
 
-```bash
-git clone https://github.com/stepantech/claude-usage-win.git
-cd claude-usage-win/ClaudeUsageWin
-dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o dist
-```
-
-The compiled executable will be in `ClaudeUsageWin/dist/ClaudeUsage.exe`.
-
----
-
-## Getting Started
-
-1. **Download and run** `ClaudeUsage.exe`.
-2. **If Claude Code is installed** — the app auto-authenticates. You are done.
-3. **If Claude Code is not installed** — the Setup Wizard appears on first run; paste your `sessionKey` cookie (see below).
-4. **Click the tray icon** to view your current usage.
-
-### How to Get Your Session Key (manual auth)
-
-1. Open [claude.ai](https://claude.ai) in your browser and log in.
-2. Open DevTools (`F12` or `Ctrl+Shift+I`).
-3. Go to the **Application** tab (Chrome) or **Storage** tab (Firefox).
-4. Under **Cookies**, select `https://claude.ai`.
-5. Find the cookie named `sessionKey` and copy its value.
-6. Open Settings → Authentication and paste it into the Session Key field.
-
----
-
-## Settings Reference
-
-| Setting | Description |
-|---------|-------------|
-| **Authentication** | Auto (Claude Code) or manual session key |
-| **Org ID** | Auto-detected; override if needed |
-| **Profiles** | Add/switch/delete named credential profiles |
-| **Refresh interval** | 30s / 1min / 2min / 5min |
-| **Opacity** | Popup transparency (20–100%) |
-| **Usage Window Scale** | Scale the popup content (75–150%) |
-| **Always on top** | Keep popup above all other windows |
-| **Tray icon style** | Percentage / Bar / Dot |
-| **Notifications** | Thresholds for 5-hour and weekly usage |
-| **Launch at startup** | Auto-start with Windows |
-| **Claude Code Statusline** | Install/remove the statusline integration |
-| **About** | Version display and update check |
-
----
-
-## Known Issues
-
-| Issue | Details | Workaround |
-|-------|---------|------------|
-| **Profile "Add" uses auto-generated names** | The Add button in the Profiles tab creates a profile named "Profile N" with no inline name input. | Rename via the profile's JSON file in `%AppData%\ClaudeUsageWin\profiles\`. A proper input dialog is planned. |
-| **Update checker URL is a placeholder** | The "Check for updates" button points to `stepantech/claude-usage-win` on GitHub — this may 404 until the repo is published there. | The button fails gracefully with a red status message. |
-| **EXE size is ~69 MB** | Self-contained .NET 8 bundles the entire runtime. IL partial trimming is enabled but WPF/WinForms assemblies cannot be trimmed further. | Expected for self-contained .NET apps. Framework-dependent builds (~5 MB) require .NET 8 to be installed on the target machine. |
-| **Contextual Insights shows "not enough data" on first run** | Insights require at least 2 history data points. History is written to disk on each successful API fetch. | Wait for a second refresh cycle (default: 1 minute). |
-| **Setup Wizard: skipping session key with no Claude Code** | If the user skips the session key field and has no Claude Code credentials, the app starts but immediately shows an API error in the popup. | Click Refresh or open Settings to add credentials. |
-| **Drag-from-maximized positioning** | When dragging Settings from a maximized state, the restored window position may be slightly off from the cursor if the DPI scaling is not 100%. | Drag slightly to reposition after restore. |
-
----
-
-## Development
-
-### Building
+**Prerequisites:** [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) · Windows 10 or 11
 
 ```bash
+git clone https://github.com/stepantech/ClaudeUsageWin.git
 cd ClaudeUsageWin
-dotnet build          # debug build (fast)
-dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o dist   # release EXE
+
+# Run in development
+dotnet run
+
+# Publish single-file self-contained EXE
+dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o dist
+# → dist/ClaudeUsage.exe (~65 MB, no runtime required)
 ```
-
-### Watching Logs
-
-The app writes to `%AppData%\ClaudeUsageWin\logs\debug.log`. Use the included script to watch it live:
-
-```powershell
-# Live tail (color-coded INF/ERR)
-.\scripts\dev-log.ps1
-
-# Show last 50 lines then exit
-.\scripts\dev-log.ps1 -Last 50
-
-# Show only errors
-.\scripts\dev-log.ps1 -Errors
-
-# Copy full log to clipboard (paste into Claude Code, issue tracker, etc.)
-.\scripts\dev-log.ps1 -Copy
-
-# Clear the log
-.\scripts\dev-log.ps1 -Clear
-```
-
-You can also use the tray icon → **Developer** menu to copy, open, or export the log without leaving the app.
-
-### Project Structure
-
-```
-ClaudeUsageWin/
-  App.xaml / App.xaml.cs              Application entry point, tray icon, orchestration
-  MainWindow.xaml / .xaml.cs          Usage popup window
-  SettingsWindow.xaml / .xaml.cs      Settings window (non-modal)
-  SetupWizardWindow.xaml / .xaml.cs   First-run setup wizard
-  Models/
-    UsageData.cs                      API response models
-  Services/
-    ClaudeApiClient.cs                HTTP client for Claude usage API
-    ConfigService.cs                  Persistent config (JSON in %AppData%)
-    CredentialsReader.cs              Reads Claude Code OAuth credentials
-    LocalStatsReader.cs               Reads local ~/.claude/stats-cache.json
-    Logger.cs                         Debug log writer (%AppData%\ClaudeUsageWin\logs\)
-    ProfileService.cs                 Multi-profile CRUD (%AppData%\ClaudeUsageWin\profiles\)
-    StartupService.cs                 Windows startup registry entry
-    StatuslineService.cs              Claude Code statusline integration
-    ThresholdNotifier.cs              Usage threshold tray notifications
-    UsageHistory.cs                   Sparkline history (JSON in %AppData%)
-  scripts/
-    dev-log.ps1                       Development log watcher / exporter
-  docs/plans/
-    2026-02-20-bugfix-and-swift-features.md   Implementation plan
-  .github/workflows/
-    build.yml                         CI/CD release workflow (tag → EXE artifact)
-```
-
-### Data Files
-
-| File | Path | Description |
-|------|------|-------------|
-| Config | `%AppData%\ClaudeUsageWin\config.json` | All app settings |
-| Profiles | `%AppData%\ClaudeUsageWin\profiles\<id>.json` | Per-profile credentials |
-| Active profile | `%AppData%\ClaudeUsageWin\active-profile.txt` | Active profile ID |
-| Usage history | `%AppData%\ClaudeUsageWin\history.json` | Sparkline data points |
-| Debug log | `%AppData%\ClaudeUsageWin\logs\debug.log` | Rolling log (2 MB max) |
-| Log archive | `%AppData%\ClaudeUsageWin\logs\debug.log.old` | Previous log file |
 
 ---
 
-## GitHub Actions
+## Configuration
 
-Push a version tag to trigger an automatic release build:
+Config lives at `%AppData%\ClaudeUsageWin\config.json` and is managed through the Settings window. All fields have sensible defaults.
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `refreshInterval` | `60` | Seconds between auto-refreshes (30, 60, 120, or 300) |
+| `opacityPct` | `95` | Popup window opacity, 20–100% |
+| `alwaysOnTop` | `true` | Keep popup above all other windows |
+| `iconStyle` | `"Percentage"` | Tray icon style: `"Percentage"`, `"Bar"`, or `"Dot"` |
+| `notifyFiveHour` | `true` | Enable notifications for the 5-hour window |
+| `notifyWeekly` | `true` | Enable notifications for the weekly window |
+| `notifyThresholds` | `[75, 90, 95]` | Usage percentages that trigger a notification |
+| `launchAtStartup` | `false` | Register app in Windows startup (HKCU Run key) |
+| `showRemaining` | `false` | Show remaining % instead of used % |
+| `popupScale` | `1.0` | Content scale factor for the popup (0.75–1.50) |
+
+---
+
+## Tech Stack
+
+| Technology | Purpose | Notes |
+|-----------|---------|-------|
+| **C# 12 / .NET 8** | Application runtime | Targets `net8.0-windows`; single-file self-contained publish |
+| **WPF** | Popup and Settings UI | XAML layout, hardware-accelerated rendering, smooth animations |
+| **Windows Forms NotifyIcon** | System tray icon | WPF has no native tray icon support |
+| **System.Text.Json** | Config and profile serialization | Built-in, no extra dependencies |
+| **WinHttpHandler** | HTTP transport | Better Windows proxy and auth handling than the default `SocketsHttpHandler` |
+| **GDI+** | Tray icon rendering | Draws percentage/bar/dot bitmaps at runtime into 32×32 icons |
+| **IL trimming (partial)** | Binary size reduction | `TrimMode=partial` removes unused code while keeping WPF/WinForms intact |
+
+---
+
+## What Changed
+
+### v1.1.0 *(2026-02-20)*
+
+**Bug fixes:**
+- Scale slider now controls the **usage popup**, not the Settings window itself
+- Fixed double red line artifact at 100% on progress bars (WPF subpixel clipping)
+- Eliminated the Settings "ding" sound — Settings is now non-modal (`Show()` not `ShowDialog()`)
+- Usage popup is fully interactive while Settings is open
+- Window positions remembered and restored across sessions
+- Drag Settings from maximized → restores to floating window (matches Windows 11 snap behavior)
+- Toggle popup via tray icon now respects the user's last dragged position
+
+**New features:**
+- 💡 **Contextual Insights panel** — usage rate (%/hr), estimated time to limit, session peak
+- 👥 **Multi-profile support** — manage and switch multiple Claude accounts from Settings
+- 🧙 **First-run Setup Wizard** — 3-step onboarding (Welcome → Auth → Done) for new users
+- ℹ️ **About / Updates section** — version display and "Check for updates" in Settings
+- 🛠️ **Developer log tools** — copy, open, and export the debug log from the tray menu
+- 📋 **Live log watcher** — `scripts/dev-log.ps1` PowerShell live-tail viewer
+
+**Performance:**
+- Enabled IL partial trimming on publish; self-contained EXE reduced in size
+
+### v1.0.0 *(2026-02-18)*
+
+Initial release. System tray usage monitor with OAuth auto-auth via Claude Code, manual session key fallback, dark-themed floating popup, color-coded 5-hour and weekly progress bars, threshold notifications, sparkline history chart, opacity and always-on-top controls, tray icon style selector, and launch-at-startup support.
+
+---
+
+## Contributing
+
+Issues and PRs welcome. Please open an issue before submitting a large PR so we can discuss the approach.
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+git clone https://github.com/stepantech/ClaudeUsageWin.git
+cd ClaudeUsageWin
+dotnet build       # verify it compiles
+dotnet run         # run in dev mode
 ```
 
-This runs `.github/workflows/build.yml` and publishes `ClaudeUsage.exe` as a release artifact.
-
----
-
-## Privacy
-
-- All data stays on your machine. The app contacts only `api.anthropic.com` (OAuth path) or `api.claude.ai` (session key path) to fetch your usage.
-- Zero telemetry, analytics, or tracking of any kind.
-- Credentials and config are stored locally in `%AppData%\ClaudeUsageWin\`.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines and the manual test checklist.
 
 ---
 
 ## License
 
-[MIT](LICENSE)
+MIT — see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+Built for the Windows Claude users who live in the system tray.
+
+</div>
