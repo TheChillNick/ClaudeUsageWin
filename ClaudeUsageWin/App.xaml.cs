@@ -313,7 +313,9 @@ public partial class App : WpfApp
             else
             {
                 _popup.Show();
-                _popup.PositionNearTray();
+                // Only snap to tray if the user hasn't manually positioned the window
+                if (double.IsNaN(_config.PopupLeft) || double.IsNaN(_config.PopupTop))
+                    _popup.PositionNearTray();
                 _popup.Activate();
             }
         });
