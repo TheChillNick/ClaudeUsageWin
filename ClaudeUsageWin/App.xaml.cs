@@ -151,11 +151,8 @@ public partial class App : WpfApp
         }
         _popup.Activate();
         // Only show profile name if the user has explicitly set up profiles
-        var profilesDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "ClaudeUsageWin", "profiles");
         _popup.SetProfileName(
-            Directory.Exists(profilesDir) ? (ProfileService.GetActive()?.Name ?? "") : "");
+            ProfileService.ProfilesExist ? (ProfileService.GetActive()?.Name ?? "") : "");
 
         RefreshData();
     }
@@ -624,10 +621,7 @@ public partial class App : WpfApp
         if (profile is not null)
         {
             _config = _config with { SessionKey = profile.SessionKey, OrgId = profile.OrgId };
-            var profilesDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "ClaudeUsageWin", "profiles");
-            _popup.SetProfileName(Directory.Exists(profilesDir) ? profile.Name : "");
+            _popup.SetProfileName(ProfileService.ProfilesExist ? profile.Name : "");
             RefreshData();
         }
     }

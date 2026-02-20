@@ -18,6 +18,8 @@ public static class ProfileService
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "ClaudeUsageWin", "profiles");
 
+    public static bool ProfilesExist => Directory.Exists(ProfilesDir);
+
     private static readonly string ActiveFile = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "ClaudeUsageWin", "active-profile.txt");
