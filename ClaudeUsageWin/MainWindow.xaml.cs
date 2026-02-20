@@ -41,6 +41,12 @@ public partial class MainWindow : Window
         PopupScaleTransform.ScaleY = scale;
     }
 
+    public void SetProfileName(string name)
+    {
+        ProfileNameText.Text       = string.IsNullOrEmpty(name) ? "" : $"({name})";
+        ProfileNameText.Visibility = string.IsNullOrEmpty(name) ? Visibility.Collapsed : Visibility.Visible;
+    }
+
     public void UpdateData(UsageData data, DateTime lastUpdated, bool showRemaining)
     {
         _lastUpdated   = lastUpdated;

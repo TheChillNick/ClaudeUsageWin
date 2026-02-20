@@ -36,9 +36,11 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Text="Claude Usage"
-                           FontSize="15" FontWeight="Bold" Foreground="White"
-                           VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="Claude Usage" FontSize="15" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock x:Name="ProfileNameText" Text="" FontSize="10" Foreground="#6A6A6A"
+                               Visibility="Collapsed"/>
+                </StackPanel>
 
                 <!-- Used/Remaining toggle -->
                 <Button x:Name="ToggleModeBtn" Grid.Column="1" Content="Used"

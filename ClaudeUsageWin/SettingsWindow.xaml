@@ -557,6 +557,36 @@
                     </ScrollViewer>
                 </TabItem>
 
+                <!-- ═══════════════ Profiles ═══════════════ -->
+                <TabItem Header="Profiles">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="22,18,22,18">
+
+                            <TextBlock Text="PROFILES" Style="{StaticResource Label}" Margin="0,0,0,5"/>
+                            <Border Background="#1A1A1A" CornerRadius="6" Padding="12">
+                                <StackPanel>
+                                    <ListBox x:Name="ProfilesList" Background="Transparent"
+                                             BorderThickness="0" MaxHeight="120" Foreground="White"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
+                                                HorizontalAlignment="Right">
+                                        <Button Content="+ Add" Style="{StaticResource SmallBtn}"
+                                                Background="#3D3D3D" Margin="0,0,6,0"
+                                                Click="AddProfileBtn_Click"/>
+                                        <Button Content="Switch" Style="{StaticResource SmallBtn}"
+                                                Background="#3D6B4A" Margin="0,0,6,0"
+                                                Click="SwitchProfileBtn_Click"/>
+                                        <Button Content="Delete" Style="{StaticResource SmallBtn}"
+                                                Background="#6B3D3D"
+                                                Click="DeleteProfileBtn_Click"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
                 <!-- ═══════════════ Appearance ═══════════════ -->
                 <TabItem Header="Appearance">
                     <ScrollViewer VerticalScrollBarVisibility="Auto"

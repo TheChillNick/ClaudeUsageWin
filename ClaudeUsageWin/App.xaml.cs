@@ -55,6 +55,11 @@ public partial class App : WpfApp
 
         _config = ConfigService.Load();
 
+        // Overlay session key from active profile if present
+        var activeProfile = ProfileService.GetActive();
+        if (activeProfile is not null && !string.IsNullOrWhiteSpace(activeProfile.SessionKey))
+            _config = _config with { SessionKey = activeProfile.SessionKey, OrgId = activeProfile.OrgId };
+
         _popup  = new MainWindow();
         _popup.Width = Math.Clamp(_config.PopupWidth, 260, 500);
         _popup.ShowRemainingToggled += OnShowRemainingToggled;
@@ -131,6 +136,7 @@ public partial class App : WpfApp
             _popup.PositionNearTray();
         }
         _popup.Activate();
+        _popup.SetProfileName(ProfileService.GetActive()?.Name ?? "");
 
         RefreshData();
     }
@@ -514,5 +520,18 @@ public partial class App : WpfApp
         };
 
         _settingsWindow.Show();
+    }
+
+    // ── Profile ──────────────────────────────────────────────────────
+
+    public void ReloadProfile()
+    {
+        var profile = ProfileService.GetActive();
+        if (profile is not null)
+        {
+            _config = _config with { SessionKey = profile.SessionKey, OrgId = profile.OrgId };
+            _popup.SetProfileName(profile.Name);
+            RefreshData();
+        }
     }
 }

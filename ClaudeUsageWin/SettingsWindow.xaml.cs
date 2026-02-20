@@ -21,6 +21,7 @@ public partial class SettingsWindow : Window
     public AppConfig ResultConfig { get; private set; } = new();
     private readonly AppConfig _incomingConfig;
     private bool _keyVisible = false;
+    private List<Profile> _profilesList = [];
 
     public SettingsWindow(AppConfig config)
     {
@@ -70,6 +71,9 @@ public partial class SettingsWindow : Window
         // ── About version ──────────────────────────────────────────────
         var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         VersionText.Text = ver is not null ? $"v{ver.Major}.{ver.Minor}.{ver.Build}" : "v1.1.0";
+
+        // ── Profiles ───────────────────────────────────────────────────
+        RefreshProfilesList();
     }
 
     // ── Auto-auth banner ──────────────────────────────────────────────
@@ -371,6 +375,49 @@ public partial class SettingsWindow : Window
             CheckUpdateBtn.IsEnabled = true;
             CheckUpdateBtn.Content   = "Check for updates";
         }
+    }
+
+    // ── Profiles ──────────────────────────────────────────────────────
+
+    private void RefreshProfilesList()
+    {
+        if (ProfilesList is null) return;
+        var profiles = ProfileService.LoadAll();
+        var activeId = ProfileService.GetActiveId();
+        ProfilesList.Items.Clear();
+        foreach (var p in profiles)
+        {
+            var marker = p.Id == activeId ? " \u2713" : "";
+            ProfilesList.Items.Add($"{p.Name}{marker}  ({(string.IsNullOrEmpty(p.SessionKey) ? "OAuth" : "key")})");
+        }
+        ProfilesList.SelectedIndex = profiles.FindIndex(p => p.Id == activeId);
+        _profilesList = profiles;
+    }
+
+    private void AddProfileBtn_Click(object sender, RoutedEventArgs e)
+    {
+        var newProfile = new Profile { Name = "Profile " + (ProfileService.LoadAll().Count + 1) };
+        ProfileService.Save(newProfile);
+        RefreshProfilesList();
+    }
+
+    private void SwitchProfileBtn_Click(object sender, RoutedEventArgs e)
+    {
+        if (ProfilesList.SelectedIndex < 0 || _profilesList.Count == 0) return;
+        var selected = _profilesList[ProfilesList.SelectedIndex];
+        ProfileService.SetActive(selected.Id);
+        RefreshProfilesList();
+        // Tell App to reload
+        ((App)System.Windows.Application.Current).ReloadProfile();
+    }
+
+    private void DeleteProfileBtn_Click(object sender, RoutedEventArgs e)
+    {
+        if (ProfilesList.SelectedIndex < 0 || _profilesList.Count <= 1) return;
+        var selected = _profilesList[ProfilesList.SelectedIndex];
+        if (selected.Id == ProfileService.GetActiveId()) return; // can't delete active
+        ProfileService.Delete(selected.Id);
+        RefreshProfilesList();
     }
 
     // ── Drag to move ──────────────────────────────────────────────────
