@@ -20,6 +20,7 @@ public partial class MainWindow : Window
     private bool            _showRemaining;
     private bool            _pinned;
     private UsageData?      _lastData;
+    private bool            _insightsVisible;
 
     public event EventHandler? ShowRemainingToggled;
 
@@ -103,6 +104,8 @@ public partial class MainWindow : Window
                 SetBar(WeeklyBarFill,   WeeklyBarGrid,   data.WeeklyPct);
             }, DispatcherPriority.Loaded);
         }
+
+        UpdateInsights(data);
     }
 
     public void ApplyShowRemaining(bool showRemaining)
@@ -334,6 +337,50 @@ public partial class MainWindow : Window
     private void OpenClaudeBtn_Click(object sender, RoutedEventArgs e) =>
         System.Diagnostics.Process.Start(
             new System.Diagnostics.ProcessStartInfo("https://claude.ai") { UseShellExecute = true });
+
+    private void InsightsBtn_Click(object sender, RoutedEventArgs e)
+    {
+        _insightsVisible = !_insightsVisible;
+        InsightsPanel.Visibility = _insightsVisible ? Visibility.Visible : Visibility.Collapsed;
+        InsightsBtn.Foreground = new SolidColorBrush(
+            _insightsVisible ? WpfColor.FromRgb(255, 193, 7) : WpfColor.FromRgb(158, 158, 158));
+    }
+
+    private void UpdateInsights(UsageData data)
+    {
+        var history = UsageHistory.Load();
+        if (history.Count < 2)
+        {
+            InsightRateText.Text = "not enough data";
+            InsightTimeText.Text = "--";
+            InsightPeakText.Text = "--";
+            return;
+        }
+
+        // Rate: pct change per hour based on last two points
+        var last   = history[^1];
+        var prev   = history[^2];
+        double dtHours = (last.Timestamp - prev.Timestamp).TotalHours;
+        double rate = dtHours > 0 ? (last.FiveHourPct - prev.FiveHourPct) / dtHours : 0;
+        InsightRateText.Text = rate >= 0 ? $"+{rate:F1}%/hr" : $"{rate:F1}%/hr";
+
+        // Time to limit
+        if (rate > 0)
+        {
+            double hoursLeft = (100 - last.FiveHourPct) / rate;
+            InsightTimeText.Text = hoursLeft < 1
+                ? $"{(int)(hoursLeft * 60)}m"
+                : $"{hoursLeft:F1}h";
+        }
+        else
+        {
+            InsightTimeText.Text = "stable";
+        }
+
+        // Peak
+        int peak = history.Max(h => h.FiveHourPct);
+        InsightPeakText.Text = $"{peak}%";
+    }
 
     private void ToggleModeBtn_Click(object sender, RoutedEventArgs e)
     {
