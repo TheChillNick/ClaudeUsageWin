@@ -124,8 +124,7 @@ public partial class SettingsWindow : Window
             SessionKeyText.Text      = SessionKeyBox.Password;
             SessionKeyBox.Visibility = Visibility.Collapsed;
             SessionKeyText.Visibility = Visibility.Visible;
-            EyeToggleBtn.Content     = "\uD83D\uDEA7"; // 🚧 construction → use a text X or close eye
-            EyeToggleBtn.Content     = "\uD83D\uDE48"; // 🙈 see-no-evil
+            EyeToggleBtn.Content     = "\uD83D\uDE48"; // 🙈 see-no-evil (hide key)
             EyeToggleBtn.ToolTip     = "Hide session key";
         }
         else
