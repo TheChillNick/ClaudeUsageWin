@@ -716,6 +716,31 @@
                                     HorizontalAlignment="Left"
                                     Click="ViewLogsBtn_Click"/>
 
+                            <!-- ── About ── -->
+                            <TextBlock Text="ABOUT" Style="{StaticResource Label}" Margin="0,24,0,5"/>
+                            <Border Background="#1A1A1A" CornerRadius="6" Padding="12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Claude Usage Win" Foreground="White"
+                                                   FontWeight="SemiBold" FontSize="13"/>
+                                        <TextBlock x:Name="VersionText" Text="v1.1.0"
+                                                   Foreground="#7A7A7A" FontSize="11" Margin="0,2,0,0"/>
+                                        <TextBlock x:Name="UpdateStatusText" Text=""
+                                                   Foreground="#7A7A7A" FontSize="11" Margin="0,4,0,0"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <Button x:Name="CheckUpdateBtn" Grid.Column="1"
+                                            Content="Check for updates"
+                                            Style="{StaticResource SmallBtn}" Background="#3D3D3D"
+                                            VerticalAlignment="Top"
+                                            Click="CheckUpdateBtn_Click"/>
+                                </Grid>
+                            </Border>
+
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>

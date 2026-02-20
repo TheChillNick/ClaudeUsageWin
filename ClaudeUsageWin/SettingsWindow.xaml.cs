@@ -66,6 +66,10 @@ public partial class SettingsWindow : Window
         LaunchAtStartupCheck.IsChecked = config.LaunchAtStartup;
         RefreshStatuslineStatus();
         ShowAutoAuthStatus();
+
+        // ── About version ──────────────────────────────────────────────
+        var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        VersionText.Text = ver is not null ? $"v{ver.Major}.{ver.Minor}.{ver.Build}" : "v1.1.0";
     }
 
     // ── Auto-auth banner ──────────────────────────────────────────────
@@ -325,6 +329,48 @@ public partial class SettingsWindow : Window
         System.Diagnostics.Process.Start(
             new System.Diagnostics.ProcessStartInfo("explorer.exe", folder)
             { UseShellExecute = true });
+    }
+
+    // ── Update check ──────────────────────────────────────────────────
+
+    private async void CheckUpdateBtn_Click(object sender, RoutedEventArgs e)
+    {
+        CheckUpdateBtn.IsEnabled = false;
+        CheckUpdateBtn.Content   = "Checking\u2026";
+        UpdateStatusText.Text    = "";
+
+        try
+        {
+            using var http = new System.Net.Http.HttpClient();
+            http.DefaultRequestHeaders.Add("User-Agent", "ClaudeUsageWin");
+            var json = await http.GetStringAsync(
+                "https://api.github.com/repos/stepantech/claude-usage-win/releases/latest");
+            var doc    = System.Text.Json.JsonDocument.Parse(json);
+            var tag    = doc.RootElement.GetProperty("tag_name").GetString() ?? "";
+            var cur    = VersionText.Text.TrimStart('v');
+            var latest = tag.TrimStart('v');
+
+            if (latest == cur)
+            {
+                UpdateStatusText.Text       = "\u2713 You are on the latest version.";
+                UpdateStatusText.Foreground = new WpfBrush(WpfColor.FromRgb(76, 175, 80));
+            }
+            else
+            {
+                UpdateStatusText.Text       = $"Update available: {tag}";
+                UpdateStatusText.Foreground = new WpfBrush(WpfColor.FromRgb(255, 193, 7));
+            }
+        }
+        catch
+        {
+            UpdateStatusText.Text       = "Could not check for updates.";
+            UpdateStatusText.Foreground = new WpfBrush(WpfColor.FromRgb(255, 87, 34));
+        }
+        finally
+        {
+            CheckUpdateBtn.IsEnabled = true;
+            CheckUpdateBtn.Content   = "Check for updates";
+        }
     }
 
     // ── Drag to move ──────────────────────────────────────────────────
