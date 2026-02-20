@@ -421,9 +421,6 @@
         </Border.Effect>
 
         <Grid x:Name="ContentGrid">
-            <Grid.LayoutTransform>
-                <ScaleTransform x:Name="SettingsScaleTransform" ScaleX="1" ScaleY="1"/>
-            </Grid.LayoutTransform>
             <Grid.RowDefinitions>
                 <RowDefinition Height="46"/>
                 <RowDefinition Height="*"/>
@@ -587,7 +584,7 @@
                                       Content="Keep window always on top"
                                       Style="{StaticResource DarkCheck}" Margin="0,0,0,20"/>
 
-                            <TextBlock Text="UI SCALE" Style="{StaticResource Label}"/>
+                            <TextBlock Text="USAGE WINDOW SCALE" Style="{StaticResource Label}"/>
                             <Grid Margin="0,0,0,20">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>

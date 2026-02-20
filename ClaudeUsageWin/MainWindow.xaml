@@ -20,6 +20,9 @@
         </Border.Effect>
 
         <StackPanel>
+            <StackPanel.LayoutTransform>
+                <ScaleTransform x:Name="PopupScaleTransform" ScaleX="1" ScaleY="1"/>
+            </StackPanel.LayoutTransform>
 
             <!-- ── Header ── -->
             <Grid Margin="0,0,0,10">
@@ -176,11 +179,11 @@
                            Text="0%" FontSize="13" FontWeight="Bold" Foreground="White"/>
             </Grid>
 
-            <Grid x:Name="FiveHourBarGrid" Height="8" Margin="0,0,0,4">
-                <Rectangle Fill="#3D3D3D" RadiusX="4" RadiusY="4"/>
-                <Rectangle x:Name="FiveHourBarFill" Fill="#4CAF50" RadiusX="4" RadiusY="4"
+            <Border x:Name="FiveHourBarGrid" Height="8" Margin="0,0,0,4"
+                    Background="#3D3D3D" CornerRadius="4" ClipToBounds="True">
+                <Rectangle x:Name="FiveHourBarFill" Fill="#4CAF50"
                            HorizontalAlignment="Left" Width="0"/>
-            </Grid>
+            </Border>
             <TextBlock x:Name="FiveHourResetText" Text="Resets in --"
                        FontSize="11" Foreground="#9E9E9E" Margin="0,0,0,10"/>
 
@@ -207,11 +210,11 @@
                            Text="0%" FontSize="13" FontWeight="Bold" Foreground="White"/>
             </Grid>
 
-            <Grid x:Name="WeeklyBarGrid" Height="8" Margin="0,0,0,4">
-                <Rectangle Fill="#3D3D3D" RadiusX="4" RadiusY="4"/>
-                <Rectangle x:Name="WeeklyBarFill" Fill="#4CAF50" RadiusX="4" RadiusY="4"
+            <Border x:Name="WeeklyBarGrid" Height="8" Margin="0,0,0,4"
+                    Background="#3D3D3D" CornerRadius="4" ClipToBounds="True">
+                <Rectangle x:Name="WeeklyBarFill" Fill="#4CAF50"
                            HorizontalAlignment="Left" Width="0"/>
-            </Grid>
+            </Border>
             <TextBlock x:Name="WeeklyResetText" Text="Resets --"
                        FontSize="11" Foreground="#9E9E9E" Margin="0,0,0,10"/>
 

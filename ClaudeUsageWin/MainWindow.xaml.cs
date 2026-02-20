@@ -34,6 +34,12 @@ public partial class MainWindow : Window
 
     // ── Public API ───────────────────────────────────────────────────
 
+    public void ApplyScale(double scale)
+    {
+        PopupScaleTransform.ScaleX = scale;
+        PopupScaleTransform.ScaleY = scale;
+    }
+
     public void UpdateData(UsageData data, DateTime lastUpdated, bool showRemaining)
     {
         _lastUpdated   = lastUpdated;

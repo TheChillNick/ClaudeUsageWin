@@ -15,6 +15,9 @@ public partial class SettingsWindow : Window
     private static readonly int[]    Intervals  = { 30, 60, 120, 300 };
     private static readonly string[] IconStyles = { "Percentage", "Bar", "Dot" };
 
+    public event EventHandler<AppConfig>? Saved;
+    public event EventHandler?            Cancelled;
+
     public AppConfig ResultConfig { get; private set; } = new();
     private readonly AppConfig _incomingConfig;
     private bool _keyVisible = false;
@@ -24,11 +27,6 @@ public partial class SettingsWindow : Window
         InitializeComponent();
         _incomingConfig = config;
         ResultConfig    = config;
-
-        // Apply UI scale first (LayoutTransform on inner grid)
-        var scale = Math.Clamp(config.SettingsScale, 0.75, 1.50);
-        SettingsScaleTransform.ScaleX = scale;
-        SettingsScaleTransform.ScaleY = scale;
 
         // Restore window size (clamped to a generous range)
         Width  = Math.Clamp(config.SettingsWidth,  MinWidth,  800);
@@ -48,7 +46,8 @@ public partial class SettingsWindow : Window
         // ── Appearance ────────────────────────────────────────────
         OpacitySlider.Value          = config.OpacityPct;
         OpacityValueText.Text        = $"{config.OpacityPct}%";
-        ScaleSlider.Value            = Math.Round(scale * 100.0 / 5.0) * 5.0; // snap to nearest 5
+        var popupScale = Math.Clamp(config.PopupScale, 0.75, 1.50);
+        ScaleSlider.Value            = Math.Round(popupScale * 100.0 / 5.0) * 5.0; // snap to nearest 5
         ScaleValueText.Text          = $"{(int)ScaleSlider.Value}%";
         AlwaysOnTopCheck.IsChecked   = config.AlwaysOnTop;
         IconStyleCombo.SelectedIndex = Math.Max(0, Array.IndexOf(IconStyles, config.IconStyle));
@@ -177,15 +176,11 @@ public partial class SettingsWindow : Window
     private void ScaleSlider_ValueChanged(object sender,
         System.Windows.RoutedPropertyChangedEventArgs<double> e)
     {
-        if (ScaleValueText is null || SettingsScaleTransform is null) return;
-        var pct   = (int)ScaleSlider.Value;
-        var scale = pct / 100.0;
-        ScaleValueText.Text           = $"{pct}%";
-        SettingsScaleTransform.ScaleX = scale;
-        SettingsScaleTransform.ScaleY = scale;
-        // Resize window proportionally to base size (460×560)
-        Width  = Math.Clamp(460 * scale, MinWidth,  800);
-        Height = Math.Clamp(560 * scale, MinHeight, 900);
+        if (ScaleValueText is null) return;
+        ScaleValueText.Text = $"{(int)ScaleSlider.Value}%";
+        // Live preview: tell App to apply new scale to popup
+        var scale = ScaleSlider.Value / 100.0;
+        ((App)System.Windows.Application.Current).PreviewPopupScale(scale);
     }
 
     // ── Auto-detect Org ID ────────────────────────────────────────────
@@ -270,14 +265,18 @@ public partial class SettingsWindow : Window
             ShowRemaining       = _incomingConfig.ShowRemaining,
             SubscriptionType    = _incomingConfig.SubscriptionType,
             StatuslineInstalled = _incomingConfig.StatuslineInstalled,
-            // Remember settings window dimensions and scale
-            SettingsWidth  = (int)Math.Clamp(ActualWidth,  MinWidth,  800),
-            SettingsHeight = (int)Math.Clamp(ActualHeight, MinHeight, 900),
-            SettingsScale  = ScaleSlider.Value / 100.0,
-            PopupWidth     = _incomingConfig.PopupWidth,
+            PopupWidth          = _incomingConfig.PopupWidth,
+            PopupScale          = ScaleSlider.Value / 100.0,
+            // Window positions preserved from incoming config (App.cs saves them on close)
+            PopupLeft      = _incomingConfig.PopupLeft,
+            PopupTop       = _incomingConfig.PopupTop,
+            SettingsLeft   = _incomingConfig.SettingsLeft,
+            SettingsTop    = _incomingConfig.SettingsTop,
+            SettingsWidth  = _incomingConfig.SettingsWidth,
+            SettingsHeight = _incomingConfig.SettingsHeight,
         };
 
-        DialogResult = true;
+        Saved?.Invoke(this, ResultConfig);
         Close();
     }
 
@@ -285,7 +284,7 @@ public partial class SettingsWindow : Window
 
     private void CancelBtn_Click(object sender, RoutedEventArgs e)
     {
-        DialogResult = false;
+        Cancelled?.Invoke(this, EventArgs.Empty);
         Close();
     }
 
@@ -335,12 +334,26 @@ public partial class SettingsWindow : Window
     {
         if (e.ChangedButton != System.Windows.Input.MouseButton.Left) return;
 
+        // Don't capture drag if a button was clicked
         var src = e.OriginalSource as System.Windows.DependencyObject;
         while (src is not null)
         {
             if (src is System.Windows.Controls.Button) return;
             src = System.Windows.Media.VisualTreeHelper.GetParent(src);
         }
+
+        if (WindowState == WindowState.Maximized)
+        {
+            // Restore to normal, then let the user drag from current cursor position
+            var mousePos = e.GetPosition(this);
+            WindowState = WindowState.Normal;
+
+            // Re-position so the cursor is over the title bar area (proportionally)
+            var screenPos = System.Windows.Forms.Control.MousePosition;
+            Left = screenPos.X - (Width * (mousePos.X / ActualWidth));
+            Top  = screenPos.Y - (mousePos.Y / 2.0); // keep near cursor
+        }
+
         DragMove();
     }
 }

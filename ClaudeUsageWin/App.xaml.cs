@@ -18,12 +18,13 @@ public partial class App : WpfApp
 
     private static Mutex? _singleInstanceMutex;
 
-    private NotifyIcon       _tray   = null!;
-    private MainWindow       _popup  = null!;
-    private DispatcherTimer  _timer  = null!;
-    private AppConfig        _config = null!;
-    private ThresholdNotifier _notifier = new();
-    private int? _lastPct;
+    private NotifyIcon        _tray           = null!;
+    private MainWindow        _popup          = null!;
+    private DispatcherTimer   _timer          = null!;
+    private AppConfig         _config         = null!;
+    private ThresholdNotifier _notifier       = new();
+    private int?              _lastPct;
+    private SettingsWindow?   _settingsWindow;
 
     // ── Startup ──────────────────────────────────────────────────────
 
@@ -70,6 +71,14 @@ public partial class App : WpfApp
             }
         };
 
+        // Save popup position when it moves
+        _popup.LocationChanged += (_, _) =>
+        {
+            if (!_popup.IsLoaded) return;
+            _config = _config with { PopupLeft = _popup.Left, PopupTop = _popup.Top };
+            ConfigService.Save(_config);
+        };
+
         ApplyWindowSettings();
         BuildTrayIcon();
         BuildTimer();
@@ -108,7 +117,19 @@ public partial class App : WpfApp
         }
 
         _popup.Show();
-        _popup.PositionNearTray();
+        if (!double.IsNaN(_config.PopupLeft) && !double.IsNaN(_config.PopupTop))
+        {
+            _popup.Left = _config.PopupLeft;
+            _popup.Top  = _config.PopupTop;
+            // Clamp to screen bounds
+            var wa = SystemParameters.WorkArea;
+            _popup.Left = Math.Clamp(_popup.Left, wa.Left, wa.Right  - _popup.Width);
+            _popup.Top  = Math.Clamp(_popup.Top,  wa.Top,  wa.Bottom - _popup.ActualHeight);
+        }
+        else
+        {
+            _popup.PositionNearTray();
+        }
         _popup.Activate();
 
         RefreshData();
@@ -128,6 +149,12 @@ public partial class App : WpfApp
     {
         _popup.Opacity = _config.OpacityPct / 100.0;
         _popup.Topmost = _config.AlwaysOnTop;
+        _popup.ApplyScale(_config.PopupScale);
+    }
+
+    public void PreviewPopupScale(double scale)
+    {
+        _popup.ApplyScale(scale);
     }
 
     // ── Tray icon ────────────────────────────────────────────────────
@@ -436,25 +463,56 @@ public partial class App : WpfApp
 
     public void ShowSettings()
     {
-        IsSettingsOpen = true;
-        var dlg = new SettingsWindow(_config);
-        // No Owner — avoids modal focus-trap sound when clicking the main window
-        if (dlg.ShowDialog() == true)
+        // If already open, bring to front
+        if (IsSettingsOpen)
         {
-            bool credChanged = dlg.ResultConfig.SessionKey != _config.SessionKey;
-            _config = dlg.ResultConfig with { OrgId = credChanged ? "" : dlg.ResultConfig.OrgId };
+            _settingsWindow?.Activate();
+            return;
+        }
+
+        IsSettingsOpen  = true;
+        _settingsWindow = new SettingsWindow(_config);
+
+        // Restore settings position
+        if (!double.IsNaN(_config.SettingsLeft) && !double.IsNaN(_config.SettingsTop))
+        {
+            _settingsWindow.WindowStartupLocation = System.Windows.WindowStartupLocation.Manual;
+            _settingsWindow.Left = _config.SettingsLeft;
+            _settingsWindow.Top  = _config.SettingsTop;
+            var wa = SystemParameters.WorkArea;
+            _settingsWindow.Left = Math.Clamp(_settingsWindow.Left, wa.Left, wa.Right  - _settingsWindow.Width);
+            _settingsWindow.Top  = Math.Clamp(_settingsWindow.Top,  wa.Top,  wa.Bottom - _settingsWindow.Height);
+        }
+
+        _settingsWindow.Saved += (_, newConfig) =>
+        {
+            bool credChanged = newConfig.SessionKey != _config.SessionKey;
+            _config = newConfig with { OrgId = credChanged ? "" : newConfig.OrgId };
             ConfigService.Save(_config);
 
             _timer.Interval = TimeSpan.FromSeconds(_config.RefreshInterval);
             ApplyWindowSettings();
 
-            if (_config.LaunchAtStartup)
-                StartupService.Enable();
-            else
-                StartupService.Disable();
+            if (_config.LaunchAtStartup) StartupService.Enable();
+            else                         StartupService.Disable();
 
             RefreshData();
-        }
-        IsSettingsOpen = false;
+        };
+
+        _settingsWindow.Closed += (_, _) =>
+        {
+            _config = _config with
+            {
+                SettingsLeft   = _settingsWindow!.Left,
+                SettingsTop    = _settingsWindow!.Top,
+                SettingsWidth  = (int)_settingsWindow!.Width,
+                SettingsHeight = (int)_settingsWindow!.Height,
+            };
+            ConfigService.Save(_config);
+            IsSettingsOpen  = false;
+            _settingsWindow = null;
+        };
+
+        _settingsWindow.Show();
     }
 }

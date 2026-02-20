@@ -35,7 +35,13 @@ public record AppConfig
     public int    PopupWidth      { get; init; } = 340;
     public int    SettingsWidth   { get; init; } = 460;
     public int    SettingsHeight  { get; init; } = 560;
-    public double SettingsScale   { get; init; } = 1.0;
+    public double PopupScale      { get; init; } = 1.0;
+
+    // Window positions (double.NaN = not yet set = use default)
+    public double PopupLeft      { get; init; } = double.NaN;
+    public double PopupTop       { get; init; } = double.NaN;
+    public double SettingsLeft   { get; init; } = double.NaN;
+    public double SettingsTop    { get; init; } = double.NaN;
 }
 
 public static class ConfigService
