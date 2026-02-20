@@ -16,6 +16,11 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <DebugType>None</DebugType>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <!-- IL trimming: partial mode keeps Windows Forms/WPF assemblies while trimming unused methods.
+         Only enabled during dotnet publish to avoid build-time SDK1175 error with WinForms. -->
+    <PublishTrimmed Condition="'$(PublishProtocol)' != ''">true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
   <ItemGroup>
