@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
@@ -150,7 +150,12 @@ public partial class App : WpfApp
             _popup.PositionNearTray();
         }
         _popup.Activate();
-        _popup.SetProfileName(ProfileService.GetActive()?.Name ?? "");
+        // Only show profile name if the user has explicitly set up profiles
+        var profilesDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "ClaudeUsageWin", "profiles");
+        _popup.SetProfileName(
+            Directory.Exists(profilesDir) ? (ProfileService.GetActive()?.Name ?? "") : "");
 
         RefreshData();
     }
@@ -619,7 +624,10 @@ public partial class App : WpfApp
         if (profile is not null)
         {
             _config = _config with { SessionKey = profile.SessionKey, OrgId = profile.OrgId };
-            _popup.SetProfileName(profile.Name);
+            var profilesDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "ClaudeUsageWin", "profiles");
+            _popup.SetProfileName(Directory.Exists(profilesDir) ? profile.Name : "");
             RefreshData();
         }
     }
