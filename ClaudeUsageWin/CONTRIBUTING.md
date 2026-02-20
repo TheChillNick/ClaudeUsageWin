@@ -13,8 +13,8 @@ Thank you for your interest in contributing. This guide will help you get starte
 1. Fork and clone the repository:
 
    ```bash
-   git clone https://github.com/<your-username>/claude-usage-win.git
-   cd claude-usage-win
+   git clone https://github.com/TheChillNick/ClaudeUsageWin.git
+   cd ClaudeUsageWin
    ```
 
 2. Restore dependencies:

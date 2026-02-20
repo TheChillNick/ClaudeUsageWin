@@ -347,7 +347,7 @@ public partial class SettingsWindow : Window
             using var http = new System.Net.Http.HttpClient();
             http.DefaultRequestHeaders.Add("User-Agent", "ClaudeUsageWin");
             var json = await http.GetStringAsync(
-                "https://api.github.com/repos/stepantech/claude-usage-win/releases/latest");
+                "https://api.github.com/repos/TheChillNick/ClaudeUsageWin/releases/latest");
             var doc    = System.Text.Json.JsonDocument.Parse(json);
             var tag    = doc.RootElement.GetProperty("tag_name").GetString() ?? "";
             var cur    = VersionText.Text.TrimStart('v');

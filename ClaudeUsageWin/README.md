@@ -6,7 +6,7 @@
 
 [![Windows 11](https://img.shields.io/badge/Windows-11-0078D4?logo=windows11&logoColor=white)](https://www.microsoft.com/windows)
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com)
-[![Version](https://img.shields.io/github/v/release/stepantech/ClaudeUsageWin?color=orange&label=version)](https://github.com/stepantech/ClaudeUsageWin/releases)
+[![Version](https://img.shields.io/github/v/release/TheChillNick/ClaudeUsageWin?color=orange&label=version)](https://github.com/TheChillNick/ClaudeUsageWin/releases)
 [![License](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
 
 *A Windows port of [Claude Usage Tracker](https://github.com/hamed-elfayome/Claude-Usage-Tracker) — inspired by the macOS original, built for the Windows desktop.*
@@ -87,7 +87,7 @@ The app stores its config in `%AppData%\ClaudeUsageWin\config.json` and logs to 
 **Prerequisites:** [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) · Windows 10 or 11
 
 ```bash
-git clone https://github.com/stepantech/ClaudeUsageWin.git
+git clone https://github.com/TheChillNick/ClaudeUsageWin.git
 cd ClaudeUsageWin
 
 # Run in development
@@ -168,7 +168,7 @@ Initial release. System tray usage monitor with OAuth auto-auth via Claude Code,
 Issues and PRs welcome. Please open an issue before submitting a large PR so we can discuss the approach.
 
 ```bash
-git clone https://github.com/stepantech/ClaudeUsageWin.git
+git clone https://github.com/TheChillNick/ClaudeUsageWin.git
 cd ClaudeUsageWin
 dotnet build       # verify it compiles
 dotnet run         # run in dev mode
