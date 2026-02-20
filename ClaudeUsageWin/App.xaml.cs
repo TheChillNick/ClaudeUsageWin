@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
@@ -197,6 +198,15 @@ public partial class App : WpfApp
         menu.Items.Add("Refresh Now",  null, (_, _) => RefreshData());
         menu.Items.Add("Settings",     null, (_, _) => ShowSettings());
         menu.Items.Add(new ToolStripSeparator());
+
+        // ── Developer tools ───────────────────────────────────────
+        var devMenu = new ToolStripMenuItem("Developer");
+        devMenu.DropDownItems.Add("Copy Log to Clipboard", null, (_, _) => CopyLogToClipboard());
+        devMenu.DropDownItems.Add("Open Log File",         null, (_, _) => OpenLogFile());
+        devMenu.DropDownItems.Add("Export Log…",           null, (_, _) => ExportLog());
+        menu.Items.Add(devMenu);
+        menu.Items.Add(new ToolStripSeparator());
+
         menu.Items.Add("Quit",         null, (_, _) => Shutdown());
 
         var (initIcon, initHandle) = MakeIconWithHandle(0, _config.IconStyle);
@@ -467,6 +477,70 @@ public partial class App : WpfApp
             }
         });
     }
+
+    // ── Developer log tools ───────────────────────────────────────────
+
+    private void CopyLogToClipboard()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            try
+            {
+                var logPath = Path.Combine(Logger.LogsFolder, "debug.log");
+                if (!File.Exists(logPath)) { ShowDevToast("Log file is empty / not yet created."); return; }
+                var text = File.ReadAllText(logPath);
+                System.Windows.Clipboard.SetText(text);
+                ShowDevToast($"Log copied ({text.Length:N0} chars).");
+            }
+            catch (Exception ex)
+            {
+                ShowDevToast($"Copy failed: {ex.Message}");
+            }
+        });
+    }
+
+    private void OpenLogFile()
+    {
+        try
+        {
+            var logPath = Path.Combine(Logger.LogsFolder, "debug.log");
+            Directory.CreateDirectory(Logger.LogsFolder);
+            if (!File.Exists(logPath)) File.WriteAllText(logPath, "");
+            System.Diagnostics.Process.Start(
+                new System.Diagnostics.ProcessStartInfo(logPath) { UseShellExecute = true });
+        }
+        catch (Exception ex) { ShowDevToast($"Open failed: {ex.Message}"); }
+    }
+
+    private void ExportLog()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            try
+            {
+                var logPath = Path.Combine(Logger.LogsFolder, "debug.log");
+                if (!File.Exists(logPath)) { ShowDevToast("No log file found."); return; }
+
+                var dlg = new System.Windows.Forms.SaveFileDialog
+                {
+                    Title      = "Export Claude Usage Log",
+                    FileName   = $"claude-usage-{DateTime.Now:yyyy-MM-dd_HH-mm}.log",
+                    Filter     = "Log files (*.log)|*.log|Text files (*.txt)|*.txt|All files (*.*)|*.*",
+                    DefaultExt = "log",
+                };
+                if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    File.Copy(logPath, dlg.FileName, overwrite: true);
+                    ShowDevToast($"Log exported to {Path.GetFileName(dlg.FileName)}");
+                }
+            }
+            catch (Exception ex) { ShowDevToast($"Export failed: {ex.Message}"); }
+        });
+    }
+
+    private void ShowDevToast(string message) =>
+        _tray.ShowBalloonTip(3000, "Claude Usage — Dev", message,
+            System.Windows.Forms.ToolTipIcon.Info);
 
     private void BuildTimer()
     {
