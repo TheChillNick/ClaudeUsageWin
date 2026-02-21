@@ -66,6 +66,7 @@ public partial class SettingsWindow : Window
         // ── Behavior ──────────────────────────────────────────────
         LaunchAtStartupCheck.IsChecked = config.LaunchAtStartup;
         RefreshStatuslineStatus();
+        LoadStatuslineComponentToggles();
         ShowAutoAuthStatus();
 
         // ── About version ──────────────────────────────────────────────
@@ -321,6 +322,34 @@ public partial class SettingsWindow : Window
         RefreshStatuslineStatus();
         StatuslineInstallBtn.Content    = "Install";
         StatuslineInstallBtn.Background = new WpfBrush(WpfColor.FromRgb(76, 175, 80));
+    }
+
+    private void LoadStatuslineComponentToggles()
+    {
+        // Suppress Change events while loading
+        _loadingStatuslineToggles = true;
+        var cfg = StatuslineService.ReadConfig();
+        StatuslineShowDirCheck.IsChecked    = cfg.ShowDirectory;
+        StatuslineShowBranchCheck.IsChecked = cfg.ShowBranch;
+        StatuslineShowUsageCheck.IsChecked  = cfg.ShowUsage;
+        StatuslineShowBarCheck.IsChecked    = cfg.ShowProgressBar;
+        StatuslineShowResetCheck.IsChecked  = cfg.ShowResetTime;
+        _loadingStatuslineToggles = false;
+    }
+
+    private bool _loadingStatuslineToggles;
+
+    private void StatuslineComponent_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_loadingStatuslineToggles) return;
+        StatuslineService.WriteConfig(new StatuslineConfig
+        {
+            ShowDirectory   = StatuslineShowDirCheck.IsChecked   == true,
+            ShowBranch      = StatuslineShowBranchCheck.IsChecked == true,
+            ShowUsage       = StatuslineShowUsageCheck.IsChecked  == true,
+            ShowProgressBar = StatuslineShowBarCheck.IsChecked    == true,
+            ShowResetTime   = StatuslineShowResetCheck.IsChecked  == true,
+        });
     }
 
     // ── Logs ──────────────────────────────────────────────────────────

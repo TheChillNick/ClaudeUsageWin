@@ -431,6 +431,9 @@ public partial class App : WpfApp
 
                     Logger.Log($"RefreshData: API success — 5h={data.FiveHourPct}%, plan={data.Plan}");
 
+                    // Update statusline cache for the PowerShell hook
+                    StatuslineService.WriteCache(data.FiveHourPct, data.FiveHourResetAt);
+
                     Dispatcher.Invoke(() =>
                     {
                         _popup.ClearError();

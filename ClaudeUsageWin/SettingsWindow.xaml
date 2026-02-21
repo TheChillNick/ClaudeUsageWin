@@ -720,7 +720,7 @@
                                                VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                 <Button x:Name="StatuslineInstallBtn"
                                         Content="Install"
                                         Background="#4CAF50" FontWeight="SemiBold"
@@ -733,6 +733,33 @@
                                         Style="{StaticResource SmallBtn}"
                                         Click="StatuslineRemoveBtn_Click"/>
                             </StackPanel>
+
+                            <!-- Statusline component toggles -->
+                            <TextBlock Text="COMPONENTS" FontSize="10" FontWeight="SemiBold"
+                                       Foreground="#666666" Margin="0,0,0,8"/>
+                            <TextBlock Text="my-project │ ⎇ main │ Usage: 47% ▓▓▓▓▓░░░░░ → Reset: 4:15 PM"
+                                       FontFamily="Consolas,Courier New" FontSize="11"
+                                       Foreground="#888888" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                            <CheckBox x:Name="StatuslineShowDirCheck"
+                                      Content="Directory name"
+                                      Style="{StaticResource DarkCheck}" Margin="0,0,0,6"
+                                      Checked="StatuslineComponent_Changed" Unchecked="StatuslineComponent_Changed"/>
+                            <CheckBox x:Name="StatuslineShowBranchCheck"
+                                      Content="Git branch  (⎇ branch-name)"
+                                      Style="{StaticResource DarkCheck}" Margin="0,0,0,6"
+                                      Checked="StatuslineComponent_Changed" Unchecked="StatuslineComponent_Changed"/>
+                            <CheckBox x:Name="StatuslineShowUsageCheck"
+                                      Content="Usage percentage  (Usage: 47%)"
+                                      Style="{StaticResource DarkCheck}" Margin="0,0,0,6"
+                                      Checked="StatuslineComponent_Changed" Unchecked="StatuslineComponent_Changed"/>
+                            <CheckBox x:Name="StatuslineShowBarCheck"
+                                      Content="Progress bar  (▓▓▓▓▓░░░░░)"
+                                      Style="{StaticResource DarkCheck}" Margin="0,0,0,6"
+                                      Checked="StatuslineComponent_Changed" Unchecked="StatuslineComponent_Changed"/>
+                            <CheckBox x:Name="StatuslineShowResetCheck"
+                                      Content="Reset time  (→ Reset: 4:15 PM)"
+                                      Style="{StaticResource DarkCheck}" Margin="0,0,0,24"
+                                      Checked="StatuslineComponent_Changed" Unchecked="StatuslineComponent_Changed"/>
 
                             <!-- Error logs -->
                             <TextBlock Text="DIAGNOSTICS" Style="{StaticResource Label}"/>
