@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     private bool            _pinned;
     private UsageData?      _lastData;
     private bool            _insightsVisible;
+    private bool            _statsVisible;
 
     public event EventHandler? ShowRemainingToggled;
 
@@ -125,6 +126,7 @@ public partial class MainWindow : Window
         }
 
         UpdateInsights(data);
+        UpdateAdvancedStats(data);
     }
 
     public void ApplyShowRemaining(bool showRemaining)
@@ -404,5 +406,96 @@ public partial class MainWindow : Window
     private void ToggleModeBtn_Click(object sender, RoutedEventArgs e)
     {
         ShowRemainingToggled?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void StatsBtn_Click(object sender, RoutedEventArgs e)
+    {
+        _statsVisible = !_statsVisible;
+        AdvancedStatsPanel.Visibility = _statsVisible ? Visibility.Visible : Visibility.Collapsed;
+        StatsBtn.Foreground = new SolidColorBrush(
+            _statsVisible ? WpfColor.FromRgb(100, 181, 246) : WpfColor.FromRgb(158, 158, 158));
+    }
+
+    private void UpdateAdvancedStats(UsageData data)
+    {
+        StatsInputTokens.Text  = data.TodayInputTokens  > 0 ? FormatTokens(data.TodayInputTokens)  : "—";
+        StatsOutputTokens.Text = data.TodayOutputTokens > 0 ? FormatTokens(data.TodayOutputTokens) : "—";
+        StatsCacheRead.Text    = data.TodayCacheReadTokens  > 0 ? FormatTokens(data.TodayCacheReadTokens)  : "—";
+        StatsCacheWrite.Text   = data.TodayCacheWriteTokens > 0 ? FormatTokens(data.TodayCacheWriteTokens) : "—";
+
+        StatsCostTotal.Text = data.TodayCostUSD > 0 ? $"${data.TodayCostUSD:F4}" : "—";
+        StatsBurnRate.Text  = data.BurnRateCostPerHour > 0
+            ? $"${data.BurnRateCostPerHour:F3}/hr"
+            : data.BurnRateTokensPerHour > 0
+                ? $"{FormatTokens((long)data.BurnRateTokensPerHour)} tok/hr"
+                : "—";
+
+        // Model breakdown
+        StatsModelsPanel.Children.Clear();
+        if (data.ModelTokensToday.Count == 0)
+        {
+            StatsModelsHeader.Visibility = Visibility.Collapsed;
+            StatsModelsPanel.Visibility  = Visibility.Collapsed;
+        }
+        else
+        {
+            StatsModelsHeader.Visibility = Visibility.Visible;
+            StatsModelsPanel.Visibility  = Visibility.Visible;
+            foreach (var (model, tokens) in data.ModelTokensToday.OrderByDescending(kv => kv.Value))
+            {
+                var row = new Grid { Margin = new Thickness(0, 0, 0, 2) };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                var lbl = new TextBlock { Text = model, FontSize = 11,
+                    Foreground = new SolidColorBrush(WpfColor.FromRgb(158, 158, 158)),
+                    TextTrimming = TextTrimming.CharacterEllipsis };
+                var val = new TextBlock { Text = FormatTokens(tokens), FontSize = 11,
+                    Foreground = new SolidColorBrush(WpfColor.FromRgb(255, 255, 255)) };
+                Grid.SetColumn(lbl, 0); Grid.SetColumn(val, 1);
+                row.Children.Add(lbl); row.Children.Add(val);
+                StatsModelsPanel.Children.Add(row);
+            }
+        }
+
+        // Project breakdown
+        StatsProjectsPanel.Children.Clear();
+        if (data.ProjectMessagesToday.Count == 0)
+        {
+            StatsProjectsHeader.Visibility = Visibility.Collapsed;
+            StatsProjectsPanel.Visibility  = Visibility.Collapsed;
+        }
+        else
+        {
+            StatsProjectsHeader.Visibility = Visibility.Visible;
+            StatsProjectsPanel.Visibility  = Visibility.Visible;
+            foreach (var (project, count) in data.ProjectMessagesToday.OrderByDescending(kv => kv.Value))
+            {
+                var row = new Grid { Margin = new Thickness(0, 0, 0, 2) };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                var lbl = new TextBlock { Text = project, FontSize = 11,
+                    Foreground = new SolidColorBrush(WpfColor.FromRgb(158, 158, 158)),
+                    TextTrimming = TextTrimming.CharacterEllipsis };
+                var val = new TextBlock { Text = $"{count} msg{(count != 1 ? "s" : "")}", FontSize = 11,
+                    Foreground = new SolidColorBrush(WpfColor.FromRgb(255, 255, 255)) };
+                Grid.SetColumn(lbl, 0); Grid.SetColumn(val, 1);
+                row.Children.Add(lbl); row.Children.Add(val);
+                StatsProjectsPanel.Children.Add(row);
+            }
+        }
+    }
+
+    public void SetSystemStatus(string indicator, string description)
+    {
+        var color = indicator switch
+        {
+            "none"     => WpfColor.FromRgb( 76, 175,  80),  // green — operational
+            "minor"    => WpfColor.FromRgb(255, 193,   7),  // yellow
+            "major"    => WpfColor.FromRgb(255,  87,  34),  // orange
+            "critical" => WpfColor.FromRgb(244,  67,  54),  // red
+            _          => WpfColor.FromRgb(100, 100, 100),  // gray — unknown
+        };
+        SystemStatusDot.Fill    = new SolidColorBrush(color);
+        SystemStatusDot.ToolTip = $"Claude API: {description}";
     }
 }

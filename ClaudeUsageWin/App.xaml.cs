@@ -21,6 +21,7 @@ public partial class App : WpfApp
 
     private NotifyIcon        _tray           = null!;
     private MainWindow        _popup          = null!;
+    private MiniWindow        _mini           = null!;
     private DispatcherTimer   _timer          = null!;
     private AppConfig         _config         = null!;
     private ThresholdNotifier _notifier       = new();
@@ -63,6 +64,13 @@ public partial class App : WpfApp
 
         _popup  = new MainWindow();
         _popup.Width = Math.Clamp(_config.PopupWidth, 260, 500);
+
+        _mini = new MiniWindow();
+        _mini.OpenMainRequested += (_, _) => Dispatcher.Invoke(() =>
+        {
+            if (!_popup.IsVisible) { _popup.Show(); _popup.Activate(); }
+            else _popup.Activate();
+        });
         _popup.ShowRemainingToggled += OnShowRemainingToggled;
 
         // Remember popup width when user resizes
@@ -186,6 +194,14 @@ public partial class App : WpfApp
         var menu = new ContextMenuStrip();
         menu.Items.Add("Show / Hide", null, (_, _) => TogglePopup());
         menu.Items.Add("Minimize",    null, (_, _) => Dispatcher.Invoke(() => _popup.Hide()));
+
+        var miniItem = new ToolStripMenuItem("Mini Widget") { CheckOnClick = true };
+        miniItem.Click += (_, _) => Dispatcher.Invoke(() =>
+        {
+            if (miniItem.Checked) { _mini.Show(); _mini.PositionNearTray(); }
+            else                    _mini.Hide();
+        });
+        menu.Items.Add(miniItem);
         menu.Items.Add(new ToolStripSeparator());
 
         var resizeMenu = new ToolStripMenuItem("Resize");
@@ -353,6 +369,9 @@ public partial class App : WpfApp
 
     public void RefreshData()
     {
+        // Fire-and-forget system status check (non-blocking)
+        _ = Task.Run(UpdateSystemStatusAsync);
+
         Task.Run(async () =>
         {
             try
@@ -414,12 +433,26 @@ public partial class App : WpfApp
                         data = await client.GetUsageAsync(orgId);
                 }
 
-                // Overlay today's local stats (messages + tokens) on API data
+                // Overlay today's local stats (messages, tokens, advanced stats) on API data
                 if (data is not null)
                 {
                     var local = LocalStatsReader.TryRead();
                     if (local is not null)
-                        data = data with { TodayMessages = local.TodayMessages, TodayTokens = local.TodayTokens };
+                        data = data with
+                        {
+                            TodayMessages         = local.TodayMessages,
+                            TodayTokens           = local.TodayTokens,
+                            TodayInputTokens      = local.TodayInputTokens,
+                            TodayOutputTokens     = local.TodayOutputTokens,
+                            TodayCacheReadTokens  = local.TodayCacheReadTokens,
+                            TodayCacheWriteTokens = local.TodayCacheWriteTokens,
+                            TodayCostUSD          = local.TodayCostUSD,
+                            BurnRateTokensPerHour = local.BurnRateTokensPerHour,
+                            BurnRateCostPerHour   = local.BurnRateCostPerHour,
+                            ModelTokensToday      = local.ModelTokensToday,
+                            ProjectMessagesToday  = local.ProjectMessagesToday,
+                            TodayFirstMessageAt   = local.TodayFirstMessageAt,
+                        };
                 }
 
                 // ── 3a. API success ───────────────────────────────
@@ -445,6 +478,7 @@ public partial class App : WpfApp
                         UpdateTray(data.FiveHourPct);
                         _notifier.Check(data, _config, _tray);
                         _popup.StopRefreshAnimation();
+                        _mini.UpdateData(data.FiveHourPct, data.TodayCostUSD, _config.ShowRemaining);
                     });
                     return;
                 }
@@ -460,6 +494,7 @@ public partial class App : WpfApp
                         _popup.SetOfflineMode(false);
                         _popup.UpdateData(localData, DateTime.Now, _config.ShowRemaining);
                         _popup.StopRefreshAnimation();
+                        _mini.UpdateData(0, localData.TodayCostUSD, _config.ShowRemaining);
                     });
                     return;
                 }
@@ -483,6 +518,25 @@ public partial class App : WpfApp
                 });
             }
         });
+    }
+
+    // ── System status ─────────────────────────────────────────────────
+
+    private async Task UpdateSystemStatusAsync()
+    {
+        try
+        {
+            using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            var json = await http.GetStringAsync("https://status.anthropic.com/api/v2/status.json");
+            var node = System.Text.Json.Nodes.JsonNode.Parse(json);
+            var indicator   = node?["status"]?["indicator"]?.GetValue<string>()   ?? "unknown";
+            var description = node?["status"]?["description"]?.GetValue<string>() ?? "Unknown";
+            Dispatcher.Invoke(() => _popup.SetSystemStatus(indicator, description));
+        }
+        catch
+        {
+            Dispatcher.Invoke(() => _popup.SetSystemStatus("unknown", "Status unavailable"));
+        }
     }
 
     // ── Developer log tools ───────────────────────────────────────────

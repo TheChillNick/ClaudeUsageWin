@@ -98,8 +98,30 @@
                     </Button.Foreground>
                 </Button>
 
+                <!-- Advanced Stats toggle -->
+                <Button x:Name="StatsBtn" Grid.Column="4" Content="&#x1F4CA;"
+                        FontSize="11" Cursor="Hand" Width="22" Height="22" Margin="4,0,0,0"
+                        Click="StatsBtn_Click" VerticalAlignment="Center"
+                        ToolTip="Toggle advanced stats">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="bg" Background="#3D3D3D" CornerRadius="6" Padding="0">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bg" Property="Background" Value="#505050"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Foreground>
+                        <SolidColorBrush Color="#9E9E9E"/>
+                    </Button.Foreground>
+                </Button>
+
                 <!-- Pin/Unpin -->
-                <Button x:Name="PinBtn" Grid.Column="4" Content="&#x1F4CC;"
+                <Button x:Name="PinBtn" Grid.Column="5" Content="&#x1F4CC;"
                         FontSize="11" Cursor="Hand" Width="22" Height="22" Margin="4,0,0,0"
                         Click="PinBtn_Click" VerticalAlignment="Center"
                         ToolTip="Pin window (stay visible)">
@@ -121,7 +143,7 @@
                 </Button>
 
                 <!-- Close -->
-                <Button x:Name="ClosePopupBtn" Grid.Column="5" Content="&#x2715;"
+                <Button x:Name="ClosePopupBtn" Grid.Column="6" Content="&#x2715;"
                         FontSize="11" Cursor="Hand" Width="22" Height="22" Margin="4,0,0,0"
                         Click="ClosePopupBtn_Click" VerticalAlignment="Center">
                     <Button.Template>
@@ -309,17 +331,75 @@
                 </StackPanel>
             </Border>
 
+            <!-- ── Advanced Stats Panel ── -->
+            <Border x:Name="AdvancedStatsPanel" Background="#1A1A1A" CornerRadius="6"
+                    Padding="10,8" Margin="0,0,0,8" Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Text="ADVANCED STATS" FontSize="9" FontWeight="SemiBold"
+                               Foreground="#5A5A5A" Margin="0,0,0,8"/>
+
+                    <!-- Token type breakdown -->
+                    <TextBlock Text="Token breakdown" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,2">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="Input" FontSize="11" Foreground="#9E9E9E"/>
+                        <TextBlock x:Name="StatsInputTokens" Grid.Column="1" FontSize="11" Foreground="#64B5F6" Text="—"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,2">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="Output" FontSize="11" Foreground="#9E9E9E"/>
+                        <TextBlock x:Name="StatsOutputTokens" Grid.Column="1" FontSize="11" Foreground="#81C784" Text="—"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,2">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="Cache read" FontSize="11" Foreground="#9E9E9E"/>
+                        <TextBlock x:Name="StatsCacheRead" Grid.Column="1" FontSize="11" Foreground="#FFB74D" Text="—"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="Cache write" FontSize="11" Foreground="#9E9E9E"/>
+                        <TextBlock x:Name="StatsCacheWrite" Grid.Column="1" FontSize="11" Foreground="#CE93D8" Text="—"/>
+                    </Grid>
+
+                    <!-- Cost + burn rate -->
+                    <TextBlock Text="Cost estimate (today)" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,2">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="Total cost" FontSize="11" Foreground="#9E9E9E"/>
+                        <TextBlock x:Name="StatsCostTotal" Grid.Column="1" FontSize="11" Foreground="White" Text="—"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="Burn rate" FontSize="11" Foreground="#9E9E9E"/>
+                        <TextBlock x:Name="StatsBurnRate" Grid.Column="1" FontSize="11" Foreground="White" Text="—"/>
+                    </Grid>
+
+                    <!-- Model breakdown -->
+                    <TextBlock x:Name="StatsModelsHeader" Text="Models today" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
+                    <StackPanel x:Name="StatsModelsPanel" Margin="0,0,0,8"/>
+
+                    <!-- Project breakdown -->
+                    <TextBlock x:Name="StatsProjectsHeader" Text="Top projects today" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
+                    <StackPanel x:Name="StatsProjectsPanel"/>
+                </StackPanel>
+            </Border>
+
             <!-- ── Footer: timestamp + refresh ── -->
             <Grid Margin="0,0,0,4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="UpdatedText" Grid.Column="0" Text="Updated --"
                            FontSize="11" Foreground="#9E9E9E" VerticalAlignment="Center"/>
+                <!-- System status dot -->
+                <Ellipse x:Name="SystemStatusDot" Grid.Column="1" Width="7" Height="7"
+                         Fill="#4CAF50" Margin="0,0,6,0" VerticalAlignment="Center"
+                         ToolTip="Claude API: All Systems Operational"/>
 
                 <!-- Refresh button with spin-animation transform -->
-                <Button x:Name="RefreshBtn" Grid.Column="1"
+                <Button x:Name="RefreshBtn" Grid.Column="2"
                         Content="&#x21BA;" Width="28" Height="28" FontSize="15"
                         Cursor="Hand" Click="RefreshBtn_Click"
                         RenderTransformOrigin="0.5,0.5">
