@@ -31,6 +31,19 @@ public partial class MainWindow : Window
         _ticker = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _ticker.Tick += (_, _) => UpdateAgoLabel();
         _ticker.Start();
+
+        // Re-draw bars whenever the window is resized so they always fill the available width
+        SizeChanged += (_, _) => RefreshBars();
+    }
+
+    private void RefreshBars()
+    {
+        if (_lastData is null || _lastData.IsLocalOnly) return;
+        Dispatcher.InvokeAsync(() =>
+        {
+            SetBar(FiveHourBarFill, FiveHourBarGrid, _lastData.FiveHourPct);
+            SetBar(WeeklyBarFill,   WeeklyBarGrid,   _lastData.WeeklyPct);
+        }, DispatcherPriority.Loaded);
     }
 
     // ── Public API ───────────────────────────────────────────────────
